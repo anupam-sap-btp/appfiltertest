@@ -1,0 +1,3 @@
+ID;name;category;price;currency_code;stock;expDate;unit
+1001;Moto-edge;Mobile;25000;INR;11;2023-12-31;PC
+1002;iPhone-13;Mobile;65000;INR;7;2023-12-31;PC

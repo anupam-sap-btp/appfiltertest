@@ -1,0 +1,1 @@
+using TestSrv as service from '../../srv/test';

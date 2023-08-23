@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
+        <edmx:Include Alias="Common" Namespace="com.sap.vocabularies.Common.v1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+        <edmx:Include Alias="Core" Namespace="Org.OData.Core.V1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/UI.xml">
+        <edmx:Include Alias="UI" Namespace="com.sap.vocabularies.UI.v1"/>
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema Namespace="TestSrv" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <EntityContainer Name="EntityContainer">
+                <EntitySet Name="Products" EntityType="TestSrv.Products">
+                    <NavigationPropertyBinding Path="currency" Target="Currencies"/>
+                    <NavigationPropertyBinding Path="SiblingEntity" Target="Products"/>
+                </EntitySet>
+                <EntitySet Name="Currencies" EntityType="TestSrv.Currencies">
+                    <NavigationPropertyBinding Path="texts" Target="Currencies_texts"/>
+                    <NavigationPropertyBinding Path="localized" Target="Currencies_texts"/>
+                </EntitySet>
+                <EntitySet Name="Currencies_texts" EntityType="TestSrv.Currencies_texts"/>
+            </EntityContainer>
+            <EntityType Name="Products">
+                <Key>
+                    <PropertyRef Name="ID"/>
+                    <PropertyRef Name="IsActiveEntity"/>
+                </Key>
+                <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+                <Property Name="name" Type="Edm.String" MaxLength="100"/>
+                <Property Name="category" Type="Edm.String" MaxLength="20"/>
+                <Property Name="price" Type="Edm.Int32"/>
+                <NavigationProperty Name="currency" Type="TestSrv.Currencies">
+                    <ReferentialConstraint Property="currency_code" ReferencedProperty="code"/>
+                </NavigationProperty>
+                <Property Name="currency_code" Type="Edm.String" MaxLength="3"/>
+                <Property Name="stock" Type="Edm.Int32"/>
+                <Property Name="expDate" Type="Edm.Date"/>
+                <Property Name="unit" Type="Edm.String" MaxLength="10"/>
+                <Property Name="IDStr" Type="Edm.String"/>
+                <Property Name="IsActiveEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="true"/>
+                <Property Name="HasActiveEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="false"/>
+                <Property Name="HasDraftEntity" Type="Edm.Boolean" Nullable="false" DefaultValue="false"/>
+                <NavigationProperty Name="DraftAdministrativeData" Type="TestSrv.DraftAdministrativeData" ContainsTarget="true"/>
+                <NavigationProperty Name="SiblingEntity" Type="TestSrv.Products"/>
+            </EntityType>
+            <EntityType Name="Currencies">
+                <Key>
+                    <PropertyRef Name="code"/>
+                </Key>
+                <Property Name="name" Type="Edm.String" MaxLength="255"/>
+                <Property Name="descr" Type="Edm.String" MaxLength="1000"/>
+                <Property Name="code" Type="Edm.String" MaxLength="3" Nullable="false"/>
+                <Property Name="symbol" Type="Edm.String" MaxLength="5"/>
+                <NavigationProperty Name="texts" Type="Collection(TestSrv.Currencies_texts)">
+                    <OnDelete Action="Cascade"/>
+                </NavigationProperty>
+                <NavigationProperty Name="localized" Type="TestSrv.Currencies_texts">
+                    <ReferentialConstraint Property="code" ReferencedProperty="code"/>
+                </NavigationProperty>
+            </EntityType>
+            <EntityType Name="DraftAdministrativeData">
+                <Key>
+                    <PropertyRef Name="DraftUUID"/>
+                </Key>
+                <Property Name="DraftUUID" Type="Edm.Guid" Nullable="false"/>
+                <Property Name="CreationDateTime" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="CreatedByUser" Type="Edm.String" MaxLength="256"/>
+                <Property Name="DraftIsCreatedByMe" Type="Edm.Boolean"/>
+                <Property Name="LastChangeDateTime" Type="Edm.DateTimeOffset" Precision="7"/>
+                <Property Name="LastChangedByUser" Type="Edm.String" MaxLength="256"/>
+                <Property Name="InProcessByUser" Type="Edm.String" MaxLength="256"/>
+                <Property Name="DraftIsProcessedByMe" Type="Edm.Boolean"/>
+            </EntityType>
+            <EntityType Name="Currencies_texts">
+                <Key>
+                    <PropertyRef Name="locale"/>
+                    <PropertyRef Name="code"/>
+                </Key>
+                <Property Name="locale" Type="Edm.String" MaxLength="14" Nullable="false"/>
+                <Property Name="name" Type="Edm.String" MaxLength="255"/>
+                <Property Name="descr" Type="Edm.String" MaxLength="1000"/>
+                <Property Name="code" Type="Edm.String" MaxLength="3" Nullable="false"/>
+            </EntityType>
+            <Action Name="draftPrepare" IsBound="true" EntitySetPath="in">
+                <Parameter Name="in" Type="TestSrv.Products"/>
+                <Parameter Name="SideEffectsQualifier" Type="Edm.String"/>
+                <ReturnType Type="TestSrv.Products"/>
+            </Action>
+            <Action Name="draftActivate" IsBound="true" EntitySetPath="in">
+                <Parameter Name="in" Type="TestSrv.Products"/>
+                <ReturnType Type="TestSrv.Products"/>
+            </Action>
+            <Action Name="draftEdit" IsBound="true" EntitySetPath="in">
+                <Parameter Name="in" Type="TestSrv.Products"/>
+                <Parameter Name="PreserveChanges" Type="Edm.Boolean"/>
+                <ReturnType Type="TestSrv.Products"/>
+            </Action>
+            <Annotations Target="TestSrv.Products">
+                <Annotation Term="UI.HeaderInfo">
+                    <Record Type="UI.HeaderInfoType">
+                        <PropertyValue Property="TypeName" String="Product"/>
+                        <PropertyValue Property="TypeNamePlural" String="Products"/>
+                    </Record>
+                </Annotation>
+                <Annotation Term="UI.SelectionFields">
+                    <Collection>
+                        <PropertyPath>IDStr</PropertyPath>
+                        <PropertyPath>expDate</PropertyPath>
+                        <PropertyPath>name</PropertyPath>
+                        <PropertyPath>category</PropertyPath>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="UI.LineItem">
+                    <Collection>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="IDStr"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="name"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="expDate"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="category"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="price"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="currency_code"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="stock"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="unit"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="ID"/>
+                            <Annotation Term="UI.Hidden" Bool="true"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="UI.HeaderFacets">
+                    <Collection>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="Target" AnnotationPath="@UI.FieldGroup#Header"/>
+                            <PropertyValue Property="Label" String="Product Information"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="UI.Facets">
+                    <Collection>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="Target" AnnotationPath="@UI.FieldGroup#General"/>
+                            <PropertyValue Property="Label" String="General"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="UI.FieldGroup" Qualifier="Header">
+                    <Record Type="UI.FieldGroupType">
+                        <PropertyValue Property="Data">
+                            <Collection>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="IDStr"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="name"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="category"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="UI.FieldGroup" Qualifier="General">
+                    <Record Type="UI.FieldGroupType">
+                        <PropertyValue Property="Data">
+                            <Collection>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="stock"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="unit"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="price"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Value" Path="currency_code"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="TestSrv.EntityContainer/Products">
+                <Annotation Term="Common.DraftRoot">
+                    <Record Type="Common.DraftRootType">
+                        <PropertyValue Property="ActivationAction" String="TestSrv.draftActivate"/>
+                        <PropertyValue Property="EditAction" String="TestSrv.draftEdit"/>
+                        <PropertyValue Property="PreparationAction" String="TestSrv.draftPrepare"/>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="TestSrv.Products/ID">
+                <Annotation Term="Common.Label" String="Product ID"/>
+            </Annotations>
+            <Annotations Target="TestSrv.Products/name">
+                <Annotation Term="Common.Label" String="Description"/>
+            </Annotations>
+            <Annotations Target="TestSrv.Products/category">
+                <Annotation Term="Common.Label" String="Category"/>
+            </Annotations>
+            <Annotations Target="TestSrv.Products/price">
+                <Annotation Term="Common.Label" String="Price"/>
+            </Annotations>
+            <Annotations Target="TestSrv.Products/currency">
+                <Annotation Term="Common.Label" String="{i18n>Currency}"/>
+                    <Annotation Term="Core.Description" String="{i18n>CurrencyCode.Description}"/>
+                    </Annotations>
+                    <Annotations Target="TestSrv.Products/currency_code">
+                        <Annotation Term="Common.Label" String="{i18n>Currency}"/>
+                            <Annotation Term="Common.ValueList">
+                                <Record Type="Common.ValueListType">
+                                    <PropertyValue Property="Label" String="{i18n>Currency}"/>
+                                        <PropertyValue Property="CollectionPath" String="Currencies"/>
+                                        <PropertyValue Property="Parameters">
+                                            <Collection>
+                                                <Record Type="Common.ValueListParameterInOut">
+                                                    <PropertyValue Property="LocalDataProperty" PropertyPath="currency_code"/>
+                                                    <PropertyValue Property="ValueListProperty" String="code"/>
+                                                </Record>
+                                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                                    <PropertyValue Property="ValueListProperty" String="name"/>
+                                                </Record>
+                                            </Collection>
+                                        </PropertyValue>
+                                    </Record>
+                                </Annotation>
+                                <Annotation Term="Core.Description" String="{i18n>CurrencyCode.Description}"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/stock">
+                                    <Annotation Term="Common.Label" String="Available Stock"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/expDate">
+                                    <Annotation Term="Common.Label" String="Expiry Date"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/unit">
+                                    <Annotation Term="Common.Label" String="Unit"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/IDStr">
+                                    <Annotation Term="Common.Label" String="Product ID"/>
+                                    <Annotation Term="Core.Computed" Bool="true"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/IsActiveEntity">
+                                    <Annotation Term="UI.Hidden" Bool="true"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/HasActiveEntity">
+                                    <Annotation Term="UI.Hidden" Bool="true"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/HasDraftEntity">
+                                    <Annotation Term="UI.Hidden" Bool="true"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Products/DraftAdministrativeData">
+                                    <Annotation Term="UI.Hidden" Bool="true"/>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Currencies">
+                                    <Annotation Term="UI.Identification">
+                                        <Collection>
+                                            <Record Type="UI.DataField">
+                                                <PropertyValue Property="Value" Path="name"/>
+                                            </Record>
+                                        </Collection>
+                                    </Annotation>
+                                </Annotations>
+                                <Annotations Target="TestSrv.Currencies/name">
+                                    <Annotation Term="Common.Label" String="{i18n>Name}"/>
+                                    </Annotations>
+                                    <Annotations Target="TestSrv.Currencies/descr">
+                                        <Annotation Term="Common.Label" String="{i18n>Description}"/>
+                                        </Annotations>
+                                        <Annotations Target="TestSrv.Currencies/code">
+                                            <Annotation Term="Common.Text" Path="name"/>
+                                            <Annotation Term="Common.Label" String="{i18n>CurrencyCode}"/>
+                                            </Annotations>
+                                            <Annotations Target="TestSrv.Currencies/symbol">
+                                                <Annotation Term="Common.Label" String="{i18n>CurrencySymbol}"/>
+                                                </Annotations>
+                                                <Annotations Target="TestSrv.DraftAdministrativeData">
+                                                    <Annotation Term="Common.Label" String="{i18n>Draft_DraftAdministrativeData}"/>
+                                                    </Annotations>
+                                                    <Annotations Target="TestSrv.DraftAdministrativeData/DraftUUID">
+                                                        <Annotation Term="UI.Hidden" Bool="true"/>
+                                                        <Annotation Term="Common.Label" String="{i18n>Draft_DraftUUID}"/>
+                                                        </Annotations>
+                                                        <Annotations Target="TestSrv.DraftAdministrativeData/CreationDateTime">
+                                                            <Annotation Term="Common.Label" String="{i18n>Draft_CreationDateTime}"/>
+                                                            </Annotations>
+                                                            <Annotations Target="TestSrv.DraftAdministrativeData/CreatedByUser">
+                                                                <Annotation Term="Common.Label" String="{i18n>Draft_CreatedByUser}"/>
+                                                                </Annotations>
+                                                                <Annotations Target="TestSrv.DraftAdministrativeData/DraftIsCreatedByMe">
+                                                                    <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                    <Annotation Term="Common.Label" String="{i18n>Draft_DraftIsCreatedByMe}"/>
+                                                                    </Annotations>
+                                                                    <Annotations Target="TestSrv.DraftAdministrativeData/LastChangeDateTime">
+                                                                        <Annotation Term="Common.Label" String="{i18n>Draft_LastChangeDateTime}"/>
+                                                                        </Annotations>
+                                                                        <Annotations Target="TestSrv.DraftAdministrativeData/LastChangedByUser">
+                                                                            <Annotation Term="Common.Label" String="{i18n>Draft_LastChangedByUser}"/>
+                                                                            </Annotations>
+                                                                            <Annotations Target="TestSrv.DraftAdministrativeData/InProcessByUser">
+                                                                                <Annotation Term="Common.Label" String="{i18n>Draft_InProcessByUser}"/>
+                                                                                </Annotations>
+                                                                                <Annotations Target="TestSrv.DraftAdministrativeData/DraftIsProcessedByMe">
+                                                                                    <Annotation Term="UI.Hidden" Bool="true"/>
+                                                                                    <Annotation Term="Common.Label" String="{i18n>Draft_DraftIsProcessedByMe}"/>
+                                                                                    </Annotations>
+                                                                                    <Annotations Target="TestSrv.Currencies_texts/locale">
+                                                                                        <Annotation Term="Common.Label" String="{i18n>LanguageCode}"/>
+                                                                                        </Annotations>
+                                                                                        <Annotations Target="TestSrv.Currencies_texts/name">
+                                                                                            <Annotation Term="Common.Label" String="{i18n>Name}"/>
+                                                                                            </Annotations>
+                                                                                            <Annotations Target="TestSrv.Currencies_texts/descr">
+                                                                                                <Annotation Term="Common.Label" String="{i18n>Description}"/>
+                                                                                                </Annotations>
+                                                                                                <Annotations Target="TestSrv.Currencies_texts/code">
+                                                                                                    <Annotation Term="Common.Text" Path="name"/>
+                                                                                                    <Annotation Term="Common.Label" String="{i18n>CurrencyCode}"/>
+                                                                                                    </Annotations>
+                                                                                                </Schema>
+                                                                                            </edmx:DataServices>
+                                                                                        </edmx:Edmx>
